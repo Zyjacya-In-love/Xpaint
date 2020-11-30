@@ -1,6 +1,6 @@
 # Xpaint
 
-postgraduate JAVA assignment: A paint
+postgraduate JAVA assignment: A paint (swing & awt)
 
 ![image-20201201025941127](README.assets/image-20201201025941127.png)
 
