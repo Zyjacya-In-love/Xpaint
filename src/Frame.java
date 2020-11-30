@@ -14,7 +14,7 @@ public class Frame {
     private JSlider thicknessSlider;
     private JLabel thicknessStat = new JLabel("1");
     Color[] colorArray = { Color.BLACK, Color.RED, Color.GREEN, Color.BLUE, Color.MAGENTA, Color.GRAY, Color.ORANGE, Color.YELLOW, Color.PINK, Color.CYAN, Color.LIGHT_GRAY};
-    String[] shapeArray = { "pencil", "eraser", "line", "rectangle", "oval", "circle"};
+    String[] shapeArray = { "pencil", "eraser", "line", "rectangle", "square", "oval", "circle", "triangle"};
     ButtonHandler buttonHandler = new ButtonHandler();
     boolean isFirstSave = true;
     private JFileChooser fileChooser;
@@ -137,18 +137,18 @@ public class Frame {
                     if (fileChooser.showSaveDialog(saveButton) == JFileChooser.APPROVE_OPTION) {
                         file = fileChooser.getSelectedFile();
                         isFirstSave = false;
-                        frame.setTitle("Xpaint" + file.toString());
+                        frame.setTitle("Xpaint - " + file.toString());
                         canvas.save(file);
                     }
                 } else {
-                    frame.setTitle("Xpaint" + file.toString());
+                    frame.setTitle("Xpaint - " + file.toString());
                     canvas.save(file);
                 }
             } else if ("Load".equals(e.getActionCommand())) {
                 fileChooser = new JFileChooser();
                 if (fileChooser.showOpenDialog(loadButton) == JFileChooser.APPROVE_OPTION) {
                     file = fileChooser.getSelectedFile();
-                    frame.setTitle("Xpaint" + file.toString());
+                    frame.setTitle("Xpaint - " + file.toString());
                     canvas.load(file);
                     isFirstSave = false;
                 }

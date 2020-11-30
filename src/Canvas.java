@@ -20,6 +20,8 @@ public class Canvas extends JPanel {
 	private LinkedList<Shape> exShapes; //dynamic stack of shapes
 	private final Stack<Shape> redoStack = new Stack<Shape>();
 	private int pencilEraserX1 = 0, pencilEraserY1 = 0, pencilEraserX2 = 0, pencilEraserY2 = 0;
+	private int clickNumber = 0;
+	private int[] triangleX = new int[4], triangleY = new int[4];
 
 	public void save(File file) {
 		try {
@@ -76,7 +78,9 @@ public class Canvas extends JPanel {
 				currentShapeObject= new Line( event.getX(), event.getY(), event.getX(), event.getY(), currentShapeColor, currentShapeThickness);
 			} else if("rectangle".equals(currentShapeType)) {
 				currentShapeObject= new Rectangle( event.getX(), event.getY(), event.getX(), event.getY(), currentShapeColor, currentShapeThickness);
-			} else if("oval".equals(currentShapeType)) {
+			}else if("square".equals(currentShapeType)) {
+                currentShapeObject= new Square( event.getX(), event.getY(), event.getX(), event.getY(), currentShapeColor, currentShapeThickness);
+            } else if("oval".equals(currentShapeType)) {
 				currentShapeObject= new Oval( event.getX(), event.getY(), event.getX(), event.getY(), currentShapeColor, currentShapeThickness);
 			} else if("circle".equals(currentShapeType)) {
 				currentShapeObject= new Circle( event.getX(), event.getY(), event.getX(), event.getY(), currentShapeColor, currentShapeThickness);
@@ -99,6 +103,10 @@ public class Canvas extends JPanel {
 
 		public void mouseReleased( MouseEvent event ) {
 			if(currentShapeObject == null) return ;
+			if ("triangle".equals(currentShapeType)) {
+			    repaint();
+			    return ;
+            }
 
 			if("pencil".equals(currentShapeType) || "eraser".equals(currentShapeType)) {
 				pencilEraserX1=event.getX();
@@ -127,11 +135,43 @@ public class Canvas extends JPanel {
 		}
 
 		public void mouseMoved( MouseEvent event ) {
-
+            if("triangle".equals(currentShapeType)) {
+                if (clickNumber > 0) {
+                    triangleX[clickNumber] = event.getX();
+                    triangleY[clickNumber] = event.getY();
+                    currentShapeObject = new Triangle(triangleX, triangleY, clickNumber+1, currentShapeColor, currentShapeThickness);
+                }
+            }
+            repaint();
 		}
 
-		public void mouseDragged( MouseEvent event ) {
-			if("pencil".equals(currentShapeType) || "eraser".equals(currentShapeType)) {
+		public void mouseClicked(MouseEvent event) {
+		    if("triangle".equals(currentShapeType)) {
+		        if (clickNumber == 2) {
+                    triangleX[3] = triangleX[0];
+                    triangleY[3] = triangleY[0];
+                    clickNumber = 0;
+                    currentShapeObject = new Triangle(triangleX, triangleY, 4, currentShapeColor, currentShapeThickness);
+                    triangleX = new int[4];
+                    triangleY = new int[4];
+                    exShapes.addFirst(currentShapeObject);
+                    currentShapeObject=null; //sets currentShapeObject to null
+                    if(!redoStack.isEmpty()) {
+                        redoStack.clear();
+                    }
+                    return ;
+                }
+                triangleX[clickNumber] = event.getX();
+                triangleY[clickNumber] = event.getY();
+                clickNumber++;
+            }
+            repaint();
+        }
+
+        public void mouseDragged(MouseEvent event ) {
+            if("triangle".equals(currentShapeType)) return ;
+
+            if("pencil".equals(currentShapeType) || "eraser".equals(currentShapeType)) {
 				pencilEraserX2 = event.getX();
 				pencilEraserY2 = event.getY();
 				if("pencil".equals(currentShapeType)) {
