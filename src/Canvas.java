@@ -2,22 +2,21 @@ import java.awt.BasicStroke;
 //import java.awt.Color;
 //import java.awt.Graphics;
 import java.awt.Graphics2D;
-//import java.awt.Image;
+import java.awt.Image;
 //import java.awt.Point;
 //import java.awt.Rectangle;
-//import java.awt.RenderingHints;
+import java.awt.RenderingHints;
 //import java.awt.event.MouseAdapter;
 //import java.awt.event.MouseEvent;
 //import java.awt.event.MouseListener;
 //import java.awt.event.MouseMotionAdapter;
 //import java.awt.event.MouseMotionListener;
-//import java.awt.image.BufferedImage;
-//import java.awt.image.RenderedImage;
-//import java.io.File;
-//import java.io.IOException;
+import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
+import java.io.*;
 //import java.util.ArrayList;
 //
-//import javax.imageio.ImageIO;
+import javax.imageio.ImageIO;
 //import javax.swing.*;
 //import javax.swing.event.MouseInputAdapter;
 
@@ -28,15 +27,25 @@ import javax.swing.JLabel;
 import java.awt.BorderLayout;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseAdapter;
-import java.util.ArrayList;
+import java.util.*;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.LinkedList;
+
 
 public class Canvas extends JPanel {
 //	private int X1, Y1, X2, Y2;
-	private Graphics2D g;
+	private Graphics2D g2D;
 	private String currentShapeType;
 	private Shape currentShapeObject; //stores the current shape object
 	private Color currentShapeColor; //current shape color
+	private int currentShapeThickness;
 	private LinkedList<Shape> exShapes; //dynamic stack of shapes
 //	private LinkedList<MyShape> clearedShapes; //dynamic stack of cleared shapes from undo
 //	private Image img, background, undoTemp, redoTemp;
@@ -47,23 +56,38 @@ public class Canvas extends JPanel {
 //	private Point startPoint;
 //	private MouseMotionListener motion;
 //	private MouseListener listener;
+//	private final Stack<Shape> undoStack = new Stack<Shape>();
+	private final Stack<Shape> redoStack = new Stack<Shape>();
+	private int pencilEraserX1 = 0, pencilEraserY1 = 0, pencilEraserX2 = 0, pencilEraserY2 = 0;
 
-//	public void save(File file) {
-//		try {
+	public void save(File file) {
+		try {
+			ObjectOutputStream oos=new ObjectOutputStream(new FileOutputStream(file));
+			oos.writeObject(exShapes);
 //			ImageIO.write((RenderedImage) img, "PNG", file);
-//		} catch (IOException ex) {
-//		}
-//	}
-//
-//	public void load(File file) {
-//		try {
+		} catch (IOException ex) {
+		}
+	}
+
+	public void load(File file) {
+		try {
+			ObjectInputStream ois=new ObjectInputStream(new FileInputStream(file));
+			exShapes=(LinkedList<Shape>) ois.readObject();
+			repaint();
+//			Object allStus= ois.readObject();
+
+//			while(iter.hasNext()){
+//				Student te=iter.next();
+//				System.out.println("ID="+te.getID()+"/tname="+te.getName());
+//			}
 //			img = ImageIO.read(file);
-//			g = (Graphics2D) img.getGraphics();
-//		}
-//
-//		catch (IOException ex) {
-//		}
-//	}
+//			g2D = (Graphics2D) img.getGraphics();
+		}
+
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 //
 //	protected void paintComponent(Graphics g1) {
 //		if (img == null) {
@@ -89,6 +113,7 @@ public class Canvas extends JPanel {
 
 		currentShapeObject=null;
 		currentShapeColor=Color.BLACK;
+		currentShapeThickness=1;
 		MouseHandler handler = new MouseHandler();
 		addMouseListener( handler );
 		addMouseMotionListener( handler );
@@ -97,6 +122,17 @@ public class Canvas extends JPanel {
 	public void paintComponent( Graphics g )
 	{
 		super.paintComponent( g );
+
+//		if (img == null) {
+//			img = createImage(getSize().width, getSize().height);
+//			g2D = (Graphics2D) img.getGraphics();
+//			g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+//					RenderingHints.VALUE_ANTIALIAS_ON);
+//
+//			clear();
+//
+//		}
+//		g.drawImage(img, 0, 0, null);
 
 		// draw the shapes
 		Shape[] shapeArray=exShapes.toArray(new Shape[exShapes.size()]);
@@ -109,8 +145,29 @@ public class Canvas extends JPanel {
 	}
 	private class MouseHandler extends MouseAdapter {
 		public void mousePressed( MouseEvent event ) {
-			if("line".equals(currentShapeType)) {
-				currentShapeObject= new Line( event.getX(), event.getY(), event.getX(), event.getY(), currentShapeColor);
+			if("line".equals(currentShapeType) || currentShapeType==null) {
+				currentShapeObject= new Line( event.getX(), event.getY(), event.getX(), event.getY(), currentShapeColor, currentShapeThickness);
+			} else if("rectangle".equals(currentShapeType)) {
+				currentShapeObject= new Rectangle( event.getX(), event.getY(), event.getX(), event.getY(), currentShapeColor, currentShapeThickness);
+			} else if("oval".equals(currentShapeType)) {
+				currentShapeObject= new Oval( event.getX(), event.getY(), event.getX(), event.getY(), currentShapeColor, currentShapeThickness);
+			} else if("circle".equals(currentShapeType)) {
+				currentShapeObject= new Circle( event.getX(), event.getY(), event.getX(), event.getY(), currentShapeColor, currentShapeThickness);
+			} else if("pencil".equals(currentShapeType) || "eraser".equals(currentShapeType)) {
+				pencilEraserX1=event.getX();
+				pencilEraserY1=event.getY();
+				pencilEraserX2 = event.getX();
+				pencilEraserY2 = event.getY();
+				if("pencil".equals(currentShapeType)) {
+					currentShapeObject= new Pencil( pencilEraserX1, pencilEraserY1, pencilEraserX2, pencilEraserY2, currentShapeColor, currentShapeThickness);
+				} else if("eraser".equals(currentShapeType)) {
+					currentShapeObject= new Eraser( pencilEraserX1, pencilEraserY1, pencilEraserX2, pencilEraserY2, currentShapeColor, currentShapeThickness);
+				}
+//				currentShapeObject= new Line( pencilEraserX1, pencilEraserY1, pencilEraserX2, pencilEraserY2, currentShapeColor, currentShapeThickness);
+				pencilEraserX1 = pencilEraserX2;
+				pencilEraserY1 = pencilEraserY2;
+				exShapes.addFirst(currentShapeObject); //addFront currentShapeObject onto myShapes
+				currentShapeObject.isPencilEraserStart = true;
 			}
 
 		}
@@ -124,14 +181,32 @@ public class Canvas extends JPanel {
 		 */
 		public void mouseReleased( MouseEvent event )
 		{
-			//sets currentShapeObject x2 & Y2
-			currentShapeObject.setX2(event.getX());
-			currentShapeObject.setY2(event.getY());
+			if(currentShapeObject == null) return ;
 
-			exShapes.addFirst(currentShapeObject); //addFront currentShapeObject onto myShapes
+			if("pencil".equals(currentShapeType) || "eraser".equals(currentShapeType)) {
+				pencilEraserX1=event.getX();
+				pencilEraserY1=event.getY();
+				pencilEraserX2 = event.getX();
+				pencilEraserY2 = event.getY();
+				if("pencil".equals(currentShapeType)) {
+					currentShapeObject= new Pencil( pencilEraserX1, pencilEraserY1, pencilEraserX2, pencilEraserY2, currentShapeColor, currentShapeThickness);
+				} else if("eraser".equals(currentShapeType)) {
+					currentShapeObject= new Eraser( pencilEraserX1, pencilEraserY1, pencilEraserX2, pencilEraserY2, currentShapeColor, currentShapeThickness);
+				}
+				currentShapeObject.isPencilEraserfinish = true;
+				exShapes.addFirst(currentShapeObject); //addFront currentShapeObject onto myShapes
+			} else {
+				//sets currentShapeObject x2 & Y2
+				currentShapeObject.setX2(event.getX());
+				currentShapeObject.setY2(event.getY());
+				exShapes.addFirst(currentShapeObject); //addFront currentShapeObject onto myShapes
+			}
 
 			currentShapeObject=null; //sets currentShapeObject to null
 //			clearedShapes.makeEmpty(); //clears clearedShapes
+			if(!redoStack.isEmpty()) {
+				redoStack.clear();
+			}
 			repaint();
 
 		} // end method mouseReleased
@@ -151,9 +226,25 @@ public class Canvas extends JPanel {
 		 */
 		public void mouseDragged( MouseEvent event )
 		{
-			//sets currentShapeObject x2 & Y2
-			currentShapeObject.setX2(event.getX());
-			currentShapeObject.setY2(event.getY());
+			if("pencil".equals(currentShapeType) || "eraser".equals(currentShapeType)) {
+				pencilEraserX2 = event.getX();
+				pencilEraserY2 = event.getY();
+				if("pencil".equals(currentShapeType)) {
+					currentShapeObject= new Pencil( pencilEraserX1, pencilEraserY1, pencilEraserX2, pencilEraserY2, currentShapeColor, currentShapeThickness);
+				} else if("eraser".equals(currentShapeType)) {
+					currentShapeObject= new Eraser( pencilEraserX1, pencilEraserY1, pencilEraserX2, pencilEraserY2, currentShapeColor, currentShapeThickness);
+				}
+//				currentShapeObject= new Line( pencilEraserX1, pencilEraserY1, pencilEraserX2, pencilEraserY2, currentShapeColor, currentShapeThickness);
+				pencilEraserX1 = pencilEraserX2;
+				pencilEraserY1 = pencilEraserY2;
+				exShapes.addFirst(currentShapeObject); //addFront currentShapeObject onto myShapes
+//				currentShapeObject=null; //sets currentShapeObject to null
+			} else {
+				//sets currentShapeObject x2 & Y2
+				currentShapeObject.setX2(event.getX());
+				currentShapeObject.setY2(event.getY());
+			}
+
 
 			//sets statusLabel to current mouse position
 //			statusLabel.setText(String.format("Mouse Coordinates X: %d Y: %d",event.getX(),event.getY()));
@@ -247,32 +338,51 @@ public class Canvas extends JPanel {
 //		g.setPaint(color);
 //	}
 //
-//	public void clear() {
-//		if (background != null) {
-//			setImage(copyImage(background));
-//		} else {
-//			g.setPaint(Color.white);
-//			g.fillRect(0, 0, getSize().width, getSize().height);
-//			g.setPaint(Color.black);
-//		}
-//		repaint();
-//	}
-//
-//	public void undo() {
-//		if (undoStack.size() > 0) {
-//			undoTemp = undoStack.pop();
-//			redoStack.push(img);
-//			setImage(undoTemp);
-//		}
-//	}
-//
-//	public void redo() {
-//		if (redoStack.size() > 0) {
-//			redoTemp = redoStack.pop();
-//			undoStack.push(img);
-//			setImage(redoTemp);
-//		}
-//	}
+	public void clear() {
+		if (exShapes.size() > 0) {
+			exShapes.clear();
+			repaint();
+		}
+	}
+
+	public void undo() {
+		if (exShapes.size() > 0) {
+			if(exShapes.getFirst() instanceof Pencil || exShapes.getFirst() instanceof Eraser) {
+				System.out.println("exShapes.getFirst() instanceof Pencil");
+				while(exShapes.size() > 0 &&
+						(exShapes.getFirst() instanceof Pencil || exShapes.getFirst() instanceof Eraser) &&
+						!exShapes.getFirst().isPencilEraserStart) {
+					redoStack.push(exShapes.getFirst());
+					exShapes.removeFirst();
+				}
+			}
+			redoStack.push(exShapes.getFirst());
+			exShapes.removeFirst();
+			repaint();
+		}
+	}
+
+	public void redo() {
+		if (redoStack.size() > 0) {
+			if(redoStack.peek() instanceof Pencil || redoStack.peek() instanceof Eraser) {
+				while(redoStack.size() > 0 &&
+						(redoStack.peek() instanceof Pencil || redoStack.peek() instanceof Eraser) &&
+						!redoStack.peek().isPencilEraserfinish) {
+					exShapes.addFirst(redoStack.peek());
+					redoStack.pop();
+				}
+				if(redoStack.size() > 0 && redoStack.peek().isPencilEraserfinish) {
+					exShapes.addFirst(redoStack.peek());
+					redoStack.pop();
+				}
+			}
+			else {
+				exShapes.addFirst(redoStack.peek());
+				redoStack.pop();
+			}
+			repaint();
+		}
+	}
 //
 //	public void pencil() {
 //		removeMouseListener(listener);
@@ -290,19 +400,19 @@ public class Canvas extends JPanel {
 //	}
 //
 //	private void setImage(Image img) {
-//		g = (Graphics2D) img.getGraphics();
-//		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+//		g2D = (Graphics2D) img.getGraphics();
+//		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 //				RenderingHints.VALUE_ANTIALIAS_ON);
-//		g.setPaint(Color.black);
+//		g2D.setPaint(Color.black);
 //		this.img = img;
 //		repaint();
 //	}
-//
+
 //	public void setBackground(Image img) {
 //		background = copyImage(img);
 //		setImage(copyImage(img));
 //	}
-//
+
 //	private BufferedImage copyImage(Image img) {
 //		BufferedImage copyOfImage = new BufferedImage(getSize().width,
 //				getSize().height, BufferedImage.TYPE_INT_RGB);
@@ -315,9 +425,9 @@ public class Canvas extends JPanel {
 //		undoStack.push(copyImage(img));
 //	}
 //
-	public void setThickness(int thick) {
-		g.setStroke(new BasicStroke(thick));
-	}
+//	public void setThickness(int thick) {
+//		g2D.setStroke(new BasicStroke(thick));
+//	}
 
 	public void setCurrentShapeType(String type)
 	{
@@ -327,6 +437,9 @@ public class Canvas extends JPanel {
 	public void setCurrentShapeColor(Color color)
 	{
 		currentShapeColor=color;
+	}
+	public void setCurrentShapeThickness(int thick) {
+		currentShapeThickness=thick;
 	}
 
 //	class MyMouseListener extends MouseInputAdapter

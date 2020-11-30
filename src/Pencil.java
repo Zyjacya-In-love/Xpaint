@@ -1,14 +1,14 @@
 import java.awt.*;
 
 
-public class Line extends Shape {
+public class Pencil extends Shape {
 
-    public Line()
+    public Pencil()
     {
         super();
     }
 
-    public Line(int x1, int y1, int x2, int y2, Color color, int thickness)
+    public Pencil(int x1, int y1, int x2, int y2, Color color, int thickness)
     {
         super(x1, y1, x2, y2, color, thickness);
     } 
