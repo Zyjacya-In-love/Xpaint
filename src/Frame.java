@@ -1,5 +1,3 @@
-import sun.misc.Cleaner;
-
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -7,6 +5,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+
 
 public class Frame {
     private int width = 900, height = 800;
@@ -28,13 +27,6 @@ public class Frame {
             canvas.setCurrentShapeThickness(thicknessSlider.getValue());
         }
     };
-
-//    ActionListener listener = new ActionListener() {
-//
-//        public void actionPerformed(ActionEvent event) {
-//            System.out.println("dsadsadsadasdsadas");
-//        }
-//    };
 
     Frame() {
         // set skin
@@ -129,9 +121,6 @@ public class Frame {
     private class ButtonHandler implements ActionListener {
         // handles button events
         public void actionPerformed( ActionEvent e ) {
-            System.out.println("ButtonHandler");
-            System.out.println(e.getActionCommand());
-//            System.out.println("".equals(e.getActionCommand()));
             // set color
             if ("".equals(e.getActionCommand())) {
                 JButton button = (JButton) e.getSource();
@@ -161,6 +150,7 @@ public class Frame {
                     file = fileChooser.getSelectedFile();
                     frame.setTitle("Xpaint" + file.toString());
                     canvas.load(file);
+                    isFirstSave = false;
                 }
             } else if ("Color Picker".equals(e.getActionCommand())) {
                 Color color = Color.BLACK;
@@ -173,26 +163,6 @@ public class Frame {
             else {
                 canvas.setCurrentShapeType(e.getActionCommand());
             }
-//            else if (event.getActionCommand().equals("Redo")){
-//                panel.redoLastShape();
-//            }
-//            else if (event.getActionCommand().equals("Clear")){
-//                panel.clearDrawing();
-//            }
-//            //
-//            if("line".equals(e.getActionCommand())) {
-//                canvas.setCurrentShapeType(e.getActionCommand());
-//            }
-//            if (event.getActionCommand().equals("Undo")){
-//                canvas.clearLastShape();
-//            }
-//            else if (event.getActionCommand().equals("Redo")){
-//                canvas.redoLastShape();
-//            }
-//            else if (event.getActionCommand().equals("Clear")){
-//                canvas.clearDrawing();
-//            }
-
-        } // end method actionPerformed
-    } // end private inner class ButtonHandler
+        }
+    }
 }
