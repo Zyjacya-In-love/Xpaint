@@ -17,6 +17,6 @@ features:
 
 ## Reference
 
-1. mainly base on swing-paint-application@haxxorsid: [https://github.com/haxxorsid/swing-paint-application](https://github.com/haxxorsid/swing-paint-application)
-2. mainly base on Java-SuperPaint-Application@Jimicy:  [https://github.com/Jimicy/Java-SuperPaint-Application](https://github.com/Jimicy/Java-SuperPaint-Application)
+1. UI mainly base on swing-paint-application@haxxorsid: [https://github.com/haxxorsid/swing-paint-application](https://github.com/haxxorsid/swing-paint-application)
+2. logic mainly base on Java-SuperPaint-Application@Jimicy:  [https://github.com/Jimicy/Java-SuperPaint-Application](https://github.com/Jimicy/Java-SuperPaint-Application)
 3. others
